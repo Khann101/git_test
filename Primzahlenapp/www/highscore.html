@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+	<link href="http://code.jquery.com/mobile/1.0rc2/jquery.mobile-1.0rc2.min.css" />
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+	
+    <div>Spiel vorbei</div>
+    <div>Deine Punktzahl:</div>
+    <div id="punktzahl"></div>
+    <div id="gewonnen"></div>
+    <div id="name_eintragen" style="visibility: hidden">Trage deinen Namen ein:</div>
+    <input id="name" style="visibility: hidden"/>
+    <button id="eintragen" style="visibility: hidden">eintragen</button>
+
+<script>
+    window.onload = function(){
+    	
+    	var x=0;
+        
+        db = window.openDatabase("zwischenspeicher" , "1.0" , "DB" , 1000000);
+        //db.transaction(populateDB);
+        db.transaction(zwischenspeicher_auslesen);
+        db.transaction(highscoretabelle_auslesen);
+        db.transaction(win);
+        
+        document.getElementById("eintragen").onclick = function(){
+        	db.transaction(highscoretabelle_eintragen);
+        	window.location.href = "highscoretabelle.html";
+        }
+        
+        function highscoretabelle_eintragen(tx){
+        	var name = document.getElementById("name").value;
+        	var punkte = document.getElementById("punktzahl").innerHTML;
+        	
+			tx.executeSql('SELECT * FROM HIGHSCORE' , [] , querySuccess3);
+        	tx.executeSql('UPDATE HIGHSCORE SET benutzername = ? , punktzahl = ? WHERE nummer = ?' , [name , punkte , x]);
+        }
+        
+        function zwischenspeicher_auslesen(tx){
+        	tx.executeSql('SELECT zahl FROM VERSCHICKEN' , [] , querySuccess);
+        }
+        
+        function querySuccess3(tx , results){
+        	var y=9;
+        	while (y>x-1){
+        		var name2 = results.rows.item(y-1).benutzername;
+        		var punkte2 = results.rows.item(y-1).punktzahl;
+        		tx.executeSql('UPDATE HIGHSCORE SET benutzername = ? , punktzahl = ? WHERE nummer = ?' , [name2 , punkte2 , y+1])
+        		y=y-1;
+        	}
+        }
+        
+        function win(tx){
+        	if (x>0){
+        		document.getElementById("gewonnen").innerHTML = "Herzlichen Gl&uumlckwunsch, du hast den " + x + " Platz erreicht";
+        		document.getElementById("name_eintragen").style.visibility = "visible";
+        		document.getElementById("name").style.visibility = "visible";
+        		document.getElementById("eintragen").style.visibility = "visible";
+        	}
+        }
+        
+        function populateDB(tx){
+        	tx.executeSql('DROP TABLE IF EXISTS HIGHSCORE');
+        	 tx.executeSql('CREATE TABLE IF NOT EXISTS HIGHSCORE(nummer integer , benutzername string , punktzahl integer)');
+        	 while (x<10){
+        		 x = x+1;
+        		 tx.executeSql('INSERT INTO HIGHSCORE (nummer) VALUES (?)' , [x]);
+        		 tx.executeSql('UPDATE  HIGHSCORE SET punktzahl = 1 WHERE nummer = ?' , [x]);
+        		 tx.executeSql('UPDATE HIGHSCORE SET benutzername = "niemand" WHERE nummer = ?' , [x]);
+        	 }
+         }
+        
+         function highscoretabelle_auslesen(tx){
+        	tx.executeSql('SELECT punktzahl FROM HIGHSCORE' , [] , querySuccess2);
+         }
+         
+         function querySuccess(tx , results){
+        	document.getElementById("punktzahl").innerHTML = results.rows.item(0).zahl;
+         }
+         
+         function querySuccess2(tx , results){
+			for (var i=9; i>-1; i--){
+				if (document.getElementById("punktzahl").innerHTML > results.rows.item(i).punktzahl){
+					x = i+1;
+				}
+				
+			}
+         }
+    };
+</script>
+
+</body>
+</html>

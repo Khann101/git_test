@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+	<link href="http://code.jquery.com/mobile/1.0rc2/jquery.mobile-1.0rc2.min.css" />
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+
+	<div>Errate die n&aumlchsth&oumlhere Primzahl</div>
+	<input id="eingabe"/>
+	<button id="submit">Eingabe</button>
+	<div>
+	<div id="punktzahl" style="float: left;">Punktzahl:</div>
+	<div id="punktzahl2" name="score">0</div>
+	</div>
+	<div id="ausgabe">letzte Primzahl:</div>
+
+<script>
+	
+window.onload = function(){
+
+	document.getElementById("eingabe").focus();
+
+	document.onkeydown = function(event){	
+		if(event.keyCode == 13){
+			prim();
+		}
+	};
+
+	document.getElementById("submit").onclick = function(){
+		prim();
+	};
+		
+	var x = 0;
+	var y = 0;
+	var punktzahl = 0;
+
+	function prim(){
+
+		function drop(tx){
+	    	tx.executeSql('DROP TABLE IF EXISTS VERSCHICKEN');
+	    }
+
+	    function populateDB(tx){
+	    	//alert("funktioniert");
+	    	_punktzahl = document.getElementById("punktzahl2").innerHTML;
+	    	tx.executeSql('DROP TABLE IF EXISTS VERSCHICKEN');
+			tx.executeSql('CREATE TABLE IF NOT EXISTS VERSCHICKEN (zahl integer)');
+			tx.executeSql('INSERT INTO VERSCHICKEN (zahl) VALUES (?)' , [_punktzahl]);
+		}
+
+		var z = 0;
+		var schleife = 0;
+	
+		while(schleife == 0){
+			z = 0;
+			x = x + 1;
+			y = Math.floor(Math.sqrt(x));
+			if ((x%2 != 0 || x == 2) && x != 1){
+				while (y > 1){
+					if (y != x && x%y == 0){
+						z = z + 1;
+					}
+				y = y - 1;
+				}
+				if (z == 0){
+					var eingabe = document.getElementById("eingabe").value;
+					schleife = schleife + 1;
+					
+					if (eingabe == x){
+						punktzahl = punktzahl + 1;
+						document.getElementById("punktzahl2").innerHTML = punktzahl;
+						document.getElementById("ausgabe").innerHTML = "letzte Primzahl:" + x;
+						document.getElementById("eingabe").value = null;
+					}
+					else{
+						db = window.openDatabase("zwischenspeicher" ,  "1.0" , "DB" , 1000000)
+						db.transaction(populateDB);
+						window.location.href = "highscore.html";
+					}
+				}
+			}
+		}
+	};
+};
+	</script>
+	
+</body>
+</html>

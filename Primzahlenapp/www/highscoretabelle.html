@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+	
+	<link href="http://code.jquery.com/mobile/1.0rc2/jquery.mobile-1.0rc2.min.css" />
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+	
+	<div>Highscore</div>
+	<table id="tabelle"></table>
+	
+<script>
+	window.onload = function(){
+		        db = window.openDatabase("zwischenspeicher" , "1.0" , "DB" , 1000000);
+		        db.transaction(anzeigen);
+		        
+		        function anzeigen(tx){
+		        	 tx.executeSql('SELECT * FROM HIGHSCORE' , [] , querySuccess);
+		        }
+		        
+		        function querySuccess(tx , results){
+		        	for (var i=0; i<10; i++) {
+						document.getElementById("tabelle").innerHTML += '<tr>' + '<td>' + results.rows.item(i).nummer + '</td>' + '<td>' + results.rows.item(i).benutzername + '</td>' + '<td>' + results.rows.item(i).punktzahl + '</td>';
+					}
+		        }
+	}
+</script>
+</body>
+</html>
